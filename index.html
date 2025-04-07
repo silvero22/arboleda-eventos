@@ -1,207 +1,51 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Arboleda Eventos - Arma tu Fiesta</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Lato&display=swap" rel="stylesheet">
-  <style>
-    body { margin: 0; font-family: 'Lato', sans-serif; background: #fffdf8; color: #2c3e50; }
-    header { background-image: url('https://images.unsplash.com/photo-1608889175123-36d0c209dc74'); background-size: cover; background-position: center; height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 48px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; }
-    .presentacion, .explicacion, .boton-eventos, #calendar, .evento-detalle, .servicios, .resumen {
-      max-width: 900px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    .explicacion { margin-bottom: 0; }
-    .boton-eventos h3 { font-size: 38px; margin-bottom: 10px; cursor: pointer; color: #2c3e50; position: relative; display: inline-block; border: 1px solid #2c3e50; padding: 8px 12px; border-radius: 6px; background: transparent; transition: all 0.3s ease; }
-    .boton-eventos h3::after { content: '\25BC'; font-size: 14px; margin-left: 10px; }
-    .boton-eventos h3:hover { background-color: #f0f0f0; color: #1a1a1a; border-color: #1a1a1a; }
-    #lista-eventos { display: none; text-align: center; margin-top: 10px; }
-    #lista-eventos p { cursor: pointer; font-size: 18px; margin: 5px 0; color: #2980b9; padding: 10px; transition: all 0.3s ease; border-radius: 6px; }
-    #lista-eventos p:hover { background-color: #ecf0f1; }
-    .subservicios { display: none; text-align: left; margin-top: 10px; padding-left: 30px; }
-    .subservicios .item { margin: 5px 0; display: flex; align-items: center; justify-content: space-between; }
-    .item span { margin: 0 5px; width: 150px; display: inline-block; }
-    .item input { width: 50px; text-align: center; }
-    .total { font-weight: bold; margin-top: 15px; font-size: 18px; text-align: left; padding-left: 30px; color: green; }
-    .boton-resumen {
-      display: block;
-      width: fit-content;
-      margin: 20px auto;
-      padding: 12px 24px;
-      font-size: 16px;
-      background: linear-gradient(90deg, #ffb347, #ffcc33);
-      color: #1a1a1a;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.4s ease;
-    }
-    .boton-resumen:hover {
-      background: linear-gradient(90deg, #ffd000, #ffe64c);
-    }
-    .form-extra { text-align: center; margin-top: 20px; }
-    .form-extra input, .form-extra textarea {
-      width: 90%; max-width: 500px;
-      margin: 10px 0; padding: 10px;
-      border-radius: 6px; border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    .instagram-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-      text-align: center;
-    }
-    .instagram-float a {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-decoration: none;
-      color: #C13584;
-      font-weight: bold;
-    }
-    .instagram-float img {
-      width: 50px;
-      height: 50px;
-      margin-bottom: 5px;
-    }
-  </style>
-  <script>
-    function toggleEventos() {
-      const lista = document.getElementById('lista-eventos');
-      lista.style.display = (lista.style.display === 'block') ? 'none' : 'block';
-    }
+<!-- Agregar este bloque justo antes del cierre </body> -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar lista de eventos al hacer clic en el título
+    const tituloEventos = document.getElementById('titulo-eventos');
+    const listaEventos = document.getElementById('lista-eventos');
+    tituloEventos.addEventListener('click', function() {
+      listaEventos.style.display = listaEventos.style.display === 'block' ? 'none' : 'block';
+    });
 
-    function toggleServicios(tipo) {
-      const servicios = document.querySelectorAll('.subservicios');
-      servicios.forEach(s => s.style.display = 'none');
-      const seleccionado = document.getElementById('servicios-' + tipo);
-      if (seleccionado) seleccionado.style.display = 'block';
-    }
+    // Mostrar calendario al hacer clic
+    const mostrarCalendario = document.getElementById('mostrar-calendario');
+    const calendarContainer = document.getElementById('calendar-container');
+    mostrarCalendario.addEventListener('click', function() {
+      calendarContainer.classList.toggle('visible');
+    });
 
-    function actualizarTotal() {
-      let total = 0;
-      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
-        const precio = parseInt(input.dataset.precio);
-        const cantidad = parseInt(input.value);
-        total += precio * cantidad;
-      });
-      document.getElementById('monto-total').textContent = "$" + total.toLocaleString('es-AR');
-    }
+    // Inicializar calendario
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'es',
+      selectable: true,
+      dateClick: function(info) {
+        const fecha = new Date(info.dateStr);
+        const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
+        document.querySelector('.resumen ul li:nth-child(2)').textContent = 'Fecha seleccionada: ' + fechaFormateada;
 
-    function enviarResumen() {
-      const nombre = document.getElementById('nombre').value.trim();
-      const consulta = document.getElementById('consulta').value.trim();
-      const fecha = document.getElementById('fecha-evento').value;
-
-      if (!nombre) {
-        alert('Por favor, ingresá tu nombre y apellido.');
-        return;
+        // Simulación de horario por defecto
+        document.querySelector('.resumen ul li:nth-child(3)').textContent = 'Horario: 14:00 - 18:00';
       }
+    });
+    calendar.render();
 
-      let total = 0;
-      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
-        const precio = parseInt(input.dataset.precio);
-        const cantidad = parseInt(input.value);
-        total += precio * cantidad;
-      });
-
-      if (total === 0) {
-        alert('Por favor, seleccioná al menos un servicio adicional.');
-        return;
-      }
-
-      let mensaje = `Hola, soy ${nombre} y me gustaría reservar una fiesta con los siguientes servicios:%0AFecha del evento: ${fecha}%0A`;
-
-      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
-        const cantidad = parseInt(input.value);
-        if (cantidad > 0) {
-          const nombreServicio = input.closest('.item').querySelector('span').textContent;
-          const precio = parseInt(input.dataset.precio);
-          mensaje += `- ${nombreServicio}: ${cantidad} x $${precio.toLocaleString('es-AR')} = $${(cantidad * precio).toLocaleString('es-AR')}%0A`;
-        }
-      });
-
-      mensaje += `%0ATotal: $${total.toLocaleString('es-AR')}`;
-
-      if (consulta) {
-        mensaje += `%0AConsulta adicional: ${consulta}`;
-      }
-
-      const url = `https://wa.me/5491164524074?text=${mensaje}`;
-      window.open(url, '_blank');
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
-        input.addEventListener('input', actualizarTotal);
+    // Selección de evento
+    document.querySelectorAll('.evento').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const textoEvento = btn.textContent;
+        document.querySelector('.resumen ul li:nth-child(1)').textContent = 'Tipo de evento: ' + textoEvento;
       });
     });
-  </script>
-</head>
-<body>
-  <header><h1>Arboleda Eventos</h1></header>
-  <div class="presentacion">
-    <h2>Bienvenidos</h2>
-    <p>Somos un salón y negocio familiar. En <strong>Arboleda Eventos</strong> nos apasiona brindar el mejor servicio posible para hacer realidad la fiesta de tus sueños. ¡Gracias por elegirnos!</p>
-  </div>
+  });
 
-  <div class="explicacion">
-    <h3>¿Cómo funciona?</h3>
-    <ol>
-      <li>Elegí el tipo de evento (fiestas infantiles, bautismo, baby shower, etc.).</li>
-      <li>Seleccioná la fecha del evento.</li>
-      <li>Agregá los servicios adicionales que desees.</li>
-      <li>Visualizá tu presupuesto en tiempo real.</li>
-      <li>Enviá el resumen por WhatsApp para hacer tu reserva.</li>
-    </ol>
-    <label for="fecha-evento"><strong>Fecha del evento:</strong></label>
-    <input type="date" id="fecha-evento" name="fecha-evento" style="margin-top: 10px; padding: 5px;">
-  </div>
-
-  <div class="boton-eventos">
-    <h3 onclick="toggleEventos()">Tipos de Eventos</h3>
-    <div id="lista-eventos">
-      <p onclick="toggleServicios('cumple')">Fiestas Infantiles</p>
-
-      <div class="subservicios" id="servicios-cumple">
-        <div class="item">
-          <span>Animación</span><input type="number" value="0" min="0" data-precio="10000">
-        </div>
-        <div class="item">
-          <span>Decoración</span><input type="number" value="0" min="0" data-precio="15000">
-        </div>
-        <div class="item">
-          <span>Catering</span><input type="number" value="0" min="0" data-precio="20000">
-        </div>
-        <div class="item">
-          <span>Piñata</span><input type="number" value="0" min="0" data-precio="5000">
-        </div>
-        <div class="item">
-          <span>Show en vivo</span><input type="number" value="0" min="0" data-precio="25000">
-        </div>
-      </div>
-
-      <div class="total">Total: <span id="monto-total">$0</span></div>
-
-      <div class="form-extra">
-        <input type="text" id="nombre" placeholder="Tu nombre y apellido">
-        <textarea id="consulta" rows="3" placeholder="Consulta opcional..."></textarea>
-      </div>
-
-      <button class="boton-resumen" onclick="enviarResumen()">Enviar presupuesto</button>
-    </div>
-  </div>
-
-  <div class="instagram-float">
-    <a href="https://www.instagram.com/arbolera.eventos" target="_blank">
-      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-      <span>Seguinos</span>
-    </a>
-  </div>
-</body>
-</html>
+  // Cerrar popup si lo usaras luego
+  function cerrarPopup() {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('popup-overlay').style.display = 'none';
+  }
+</script>
