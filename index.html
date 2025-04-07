@@ -1,51 +1,206 @@
-<!-- Agregar este bloque justo antes del cierre </body> -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar lista de eventos al hacer clic en el título
-    const tituloEventos = document.getElementById('titulo-eventos');
-    const listaEventos = document.getElementById('lista-eventos');
-    tituloEventos.addEventListener('click', function() {
-      listaEventos.style.display = listaEventos.style.display === 'block' ? 'none' : 'block';
-    });
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservar evento</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to right, #2c3e50, #4ca1af);
+      min-height: 100vh;
+      color: #fff;
+    }
 
-    // Mostrar calendario al hacer clic
-    const mostrarCalendario = document.getElementById('mostrar-calendario');
-    const calendarContainer = document.getElementById('calendar-container');
-    mostrarCalendario.addEventListener('click', function() {
-      calendarContainer.classList.toggle('visible');
-    });
+    h2 {
+      cursor: pointer;
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      padding: 10px;
+      border-radius: 10px;
+      width: fit-content;
+      margin-bottom: 10px;
+    }
 
-    // Inicializar calendario
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      locale: 'es',
-      selectable: true,
-      dateClick: function(info) {
-        const fecha = new Date(info.dateStr);
-        const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-        const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
-        document.querySelector('.resumen ul li:nth-child(2)').textContent = 'Fecha seleccionada: ' + fechaFormateada;
+    #lista-eventos, #lista-servicios {
+      display: none;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
 
-        // Simulación de horario por defecto
-        document.querySelector('.resumen ul li:nth-child(3)').textContent = 'Horario: 14:00 - 18:00';
-      }
-    });
-    calendar.render();
+    .evento, .servicio {
+      padding: 6px 8px;
+      margin: 5px;
+      background-color: rgba(255,255,255,0.1);
+      border: 1px solid #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 13px;
+      color: #fff;
+    }
 
-    // Selección de evento
-    document.querySelectorAll('.evento').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        const textoEvento = btn.textContent;
-        document.querySelector('.resumen ul li:nth-child(1)').textContent = 'Tipo de evento: ' + textoEvento;
+    .evento:hover, .servicio:hover {
+      background-color: rgba(255,255,255,0.3);
+    }
+
+    #mostrar-calendario, #agregar-servicios {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #calendar-container {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.4s ease;
+      margin-bottom: 20px;
+    }
+
+    #calendar-container.visible {
+      max-height: 1000px;
+      opacity: 1;
+    }
+
+    .resumen {
+      margin-top: 20px;
+      background-color: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 400px;
+    }
+
+    .resumen ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .resumen li {
+      margin-bottom: 10px;
+    }
+
+    #confirmar-reserva {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #confirmar-reserva:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 id="titulo-eventos">Selecciona un tipo de evento</h2>
+  <div id="lista-eventos">
+    <button class="evento">Fiesta infantil</button>
+    <button class="evento">Cumpleaños</button>
+    <button class="evento">Bautizos</button>
+    <button class="evento">Comuniones</button>
+    <button class="evento">Aniversarios 1 año</button>
+    <button class="evento">Reuniones familiares</button>
+    <button class="evento">Baby Shower</button>
+    <button class="evento">Evento corporativo</button>
+  </div>
+
+  <button id="mostrar-calendario">Seleccionar fecha</button>
+  <div id="calendar-container">
+    <div id="calendar"></div>
+  </div>
+
+  <h2 id="titulo-servicios">Agregar servicios adicionales</h2>
+  <button id="agregar-servicios">Mostrar servicios</button>
+  <div id="lista-servicios">
+    <button class="servicio">Decoración ($50)</button>
+    <button class="servicio">Animación ($100)</button>
+    <button class="servicio">Catering ($200)</button>
+    <button class="servicio">Fotografía ($150)</button>
+    <button class="servicio">Música ($120)</button>
+  </div>
+
+  <div class="resumen">
+    <ul>
+      <li>Tipo de evento:</li>
+      <li>Fecha seleccionada:</li>
+      <li>Horario:</li>
+      <li>Servicios adicionales:</li>
+    </ul>
+    <button id="confirmar-reserva">Confirmar reserva</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tituloEventos = document.getElementById('titulo-eventos');
+      const listaEventos = document.getElementById('lista-eventos');
+      tituloEventos.addEventListener('click', function() {
+        listaEventos.style.display = listaEventos.style.display === 'flex' ? 'none' : 'flex';
+      });
+
+      const mostrarCalendario = document.getElementById('mostrar-calendario');
+      const calendarContainer = document.getElementById('calendar-container');
+      mostrarCalendario.addEventListener('click', function() {
+        calendarContainer.classList.toggle('visible');
+      });
+
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        selectable: true,
+        dateClick: function(info) {
+          const fecha = new Date(info.dateStr);
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+
+          if (fecha < hoy) {
+            alert('No puedes seleccionar una fecha pasada');
+            return;
+          }
+
+          const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+          const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
+          document.querySelector('.resumen ul li:nth-child(2)').textContent = 'Fecha seleccionada: ' + fechaFormateada;
+          document.querySelector('.resumen ul li:nth-child(3)').textContent = 'Horario: 14:00 - 18:00';
+        }
+      });
+      calendar.render();
+
+      document.querySelectorAll('.evento').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const textoEvento = btn.textContent;
+          document.querySelector('.resumen ul li:nth-child(1)').textContent = 'Tipo de evento: ' + textoEvento;
+        });
+      });
+
+      const agregarServicios = document.getElementById('agregar-servicios');
+      const listaServicios = document.getElementById('lista-servicios');
+      agregarServicios.addEventListener('click', function() {
+        listaServicios.style.display = listaServicios.style.display === 'flex' ? 'none' : 'flex';
+      });
+
+      document.querySelectorAll('.servicio').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const textoServicio = btn.textContent;
+          const resumenServicios = document.querySelector('.resumen ul li:nth-child(4)');
+          if (!resumenServicios.textContent.includes(textoServicio)) {
+            resumenServicios.textContent += (resumenServicios.textContent.endsWith(':') ? ' ' : ', ') + textoServicio;
+          }
+        });
       });
     });
-  });
-
-  // Cerrar popup si lo usaras luego
-  function cerrarPopup() {
-    document.getElementById('popup').style.display = 'none';
-    document.getElementById('popup-overlay').style.display = 'none';
-  }
-</script>
+  </script>
+</body>
+</html>
