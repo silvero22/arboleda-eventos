@@ -9,30 +9,118 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Lato&display=swap" rel="stylesheet">
   <style>
     body { margin: 0; font-family: 'Lato', sans-serif; background: #fffdf8; color: #2c3e50; }
-    header { background-image: url('https://images.unsplash.com/photo-1608889175123-36d0c209dc74'); background-size: cover; background-position: center; height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 48px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; }
-    .presentacion, .explicacion, .boton-eventos, #calendar, .evento-detalle, .servicios, .resumen {
-      max-width: 900px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    .explicacion { margin-bottom: 0; }
-    .boton-eventos h3 { font-size: 38px; margin-bottom: 10px; cursor: pointer; color: #2c3e50; position: relative; display: inline-block; border: 1px solid #2c3e50; padding: 8px 12px; border-radius: 6px; background: transparent; }
-    .boton-eventos h3::after { content: '\25BC'; font-size: 14px; margin-left: 10px; }
-    #lista-eventos { display: none; text-align: center; margin-top: 10px; }
-    #lista-eventos p { cursor: pointer; font-size: 18px; margin: 5px 0; color: #2980b9; }
-    #lista-eventos p:hover { text-decoration: underline; }
-    .leyenda { text-align: center; margin: 15px auto; }
-    .leyenda span { margin: 0 10px; padding: 5px; color: #2c3e50; }
-    .leyenda .circulo { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-left: 5px; }
-    .reservado { background: red; }
-    .disponible { background: green; }
-    .servicio { margin: 10px 0; }
-    .servicio label { display: block; }
-    .servicio input { width: 50px; }
-    .total { font-weight: bold; margin-top: 15px; font-size: 18px; }
-    .monto-letras { font-size: 14px; color: #555; margin-top: 5px; }
-    .redes { text-align: center; margin: 50px auto; }
-    .redes a { margin: 0 15px; font-size: 20px; color: #c0392b; text-decoration: none; }
-    .enviar-wsp { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #25d366; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    header {
+      background-image: url('https://images.unsplash.com/photo-1608889175123-36d0c209dc74');
+      background-size: cover; background-position: center;
+      height: 70vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; color: white;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      background: rgba(0,0,0,0.5);
+      padding: 20px; border-radius: 10px;
+    }
+    .presentacion, .explicacion, .boton-eventos, .total {
+      max-width: 900px; margin: 20px auto; padding: 20px;
+      background: white; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .boton-eventos h3 {
+      font-size: 38px; margin-bottom: 10px; cursor: pointer; color: #2c3e50;
+      display: inline-block; border: 1px solid #2c3e50; padding: 8px 12px;
+      border-radius: 6px; transition: all 0.3s ease;
+    }
+    .boton-eventos h3::after {
+      content: '\25BC'; font-size: 14px; margin-left: 10px;
+    }
+    .boton-eventos h3:hover {
+      background-color: #f0f0f0; color: #1a1a1a; border-color: #1a1a1a;
+    }
+    #lista-eventos { display: none; margin-top: 10px; }
+    #lista-eventos p {
+      cursor: pointer; font-size: 18px; margin: 5px 0;
+      color: #2980b9; padding: 10px; transition: all 0.3s ease;
+      border-radius: 6px;
+    }
+    #lista-eventos p:hover { background-color: #ecf0f1; }
+    .subservicios {
+      display: none; text-align: left; margin-top: 10px; padding-left: 30px;
+    }
+    .item {
+      margin: 5px 0; display: flex; align-items: center; justify-content: space-between;
+    }
+    .item span {
+      margin: 0 5px; width: 150px; display: inline-block;
+    }
+    .item input {
+      width: 50px; text-align: center;
+    }
+    .total {
+      font-weight: bold; font-size: 20px;
+      text-align: left; padding-left: 30px; color: green;
+    }
+    .boton-resumen {
+      display: block; width: fit-content; margin: 20px auto;
+      padding: 12px 24px; font-size: 16px;
+      background: linear-gradient(90deg, #ffb347, #ffcc33);
+      color: #1a1a1a; border: none; border-radius: 30px;
+      cursor: pointer; font-weight: bold;
+      transition: background 0.4s ease;
+    }
+    .boton-resumen:hover {
+      background: linear-gradient(90deg, #ffd000, #ffe64c);
+    }
   </style>
+  <script>
+    function toggleEventos() {
+      const lista = document.getElementById('lista-eventos');
+      lista.style.display = (lista.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function toggleServicios(tipo) {
+      const servicios = document.querySelectorAll('.subservicios');
+      servicios.forEach(s => s.style.display = 'none');
+      const seleccionado = document.getElementById('servicios-' + tipo);
+      if (seleccionado) seleccionado.style.display = 'block';
+    }
+
+    function actualizarTotal() {
+      let total = 10000; // precio base
+      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
+        const precio = parseInt(input.dataset.precio);
+        const cantidad = parseInt(input.value);
+        total += precio * cantidad;
+      });
+      document.getElementById('monto-total').textContent = "$" + total.toLocaleString('es-AR');
+    }
+
+    function enviarResumen() {
+      const fecha = document.getElementById('fecha-evento').value;
+      let mensaje = `Hola, me gustaría reservar una fiesta con los siguientes servicios:%0AFecha del evento: ${fecha}%0AEvento base: Fiesta estándar 4 horas con sonido y cocina funcional - $10.000%0A`;
+      let total = 10000;
+
+      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
+        const cantidad = parseInt(input.value);
+        if (cantidad > 0) {
+          const nombre = input.closest('.item').querySelector('span').textContent;
+          const precio = parseInt(input.dataset.precio);
+          mensaje += `- ${nombre}: ${cantidad} x $${precio.toLocaleString('es-AR')} = $${(cantidad * precio).toLocaleString('es-AR')}%0A`;
+          total += cantidad * precio;
+        }
+      });
+
+      mensaje += `%0ATotal: $${total.toLocaleString('es-AR')}`;
+      const url = `https://wa.me/5491164524074?text=${mensaje}`;
+      window.open(url, '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.subservicios input[type="number"]').forEach(input => {
+        input.addEventListener('input', actualizarTotal);
+      });
+    });
+  </script>
 </head>
 <body>
   <header><h1>Arboleda Eventos</h1></header>
@@ -44,12 +132,46 @@
   <div class="explicacion">
     <h3>¿Cómo funciona?</h3>
     <ol>
-      <li>Elegí el tipo de evento (cumpleaños, bautismo, baby shower, etc.).</li>
-      <li>Seleccioná la fecha en el calendario.</li>
-      <li>Agregá los servicios adicionales que desees.</li>
-      <li>Visualizá tu presupuesto en tiempo real.</li>
-      <li>Enviá el resumen por WhatsApp para hacer tu reserva.</li>
+      <li>Elegí el tipo de evento.</li>
+      <li>Seleccioná la fecha.</li>
+      <li>Agregá los servicios.</li>
+      <li>Visualizá tu total.</li>
+      <li>Enviá por WhatsApp.</li>
     </ol>
+    <label for="fecha-evento"><strong>Fecha del evento:</strong></label>
+    <input type="date" id="fecha-evento" name="fecha-evento" style="margin-top: 10px; padding: 5px;">
+  </div>
+
+  <div class="boton-eventos">
+    <h3 onclick="toggleEventos()">Tipos de Eventos</h3>
+    <div id="lista-eventos">
+      <p onclick="toggleServicios('cumple')">Fiestas Infantiles</p>
+      <div class="subservicios" id="servicios-cumple">
+        <div class="item"><span>Piñata</span> $500 <input type="number" min="0" value="0" data-precio="500"></div>
+        <div class="item"><span>Candy bar</span> $1500 <input type="number" min="0" value="0" data-precio="1500"></div>
+        <div class="item"><span>Show payaso</span> $3000 <input type="number" min="0" value="0" data-precio="3000"></div>
+        <div class="item"><span>Pelotero</span> $2500 <input type="number" min="0" value="0" data-precio="2500"></div>
+        <div class="item"><span>Metegol</span> $1000 <input type="number" min="0" value="0" data-precio="1000"></div>
+        <div class="item"><span>Cama elástica</span> $1800 <input type="number" min="0" value="0" data-precio="1800"></div>
+        <div class="item"><span>Pool</span> $2000 <input type="number" min="0" value="0" data-precio="2000"></div>
+        <div class="item"><span>DJ</span> $3500 <input type="number" min="0" value="0" data-precio="3500"></div>
+      </div>
+
+      <p onclick="toggleServicios('bautismo')">Bautismo</p>
+      <div class="subservicios" id="servicios-bautismo">
+        <div class="item"><span>Decoración iglesia</span> $1200 <input type="number" min="0" value="0" data-precio="1200"></div>
+        <div class="item"><span>Souvenirs</span> $800 <input type="number" min="0" value="0" data-precio="800"></div>
+      </div>
+
+      <p onclick="toggleServicios('baby')">Baby Shower</p>
+      <div class="subservicios" id="servicios-baby">
+        <div class="item"><span>Globos</span> $600 <input type="number" min="0" value="0" data-precio="600"></div>
+        <div class="item"><span>Torta temática</span> $2000 <input type="number" min="0" value="0" data-precio="2000"></div>
+      </div>
+
+      <div class="total">Total: <span id="monto-total">$10.000</span></div>
+      <button class="boton-resumen" onclick="enviarResumen()">Enviar resumen por WhatsApp</button>
+    </div>
   </div>
 </body>
 </html>
