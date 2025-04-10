@@ -1,51 +1,219 @@
-<!-- Agregar este bloque justo antes del cierre </body> -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar lista de eventos al hacer clic en el título
-    const tituloEventos = document.getElementById('titulo-eventos');
-    const listaEventos = document.getElementById('lista-eventos');
-    tituloEventos.addEventListener('click', function() {
-      listaEventos.style.display = listaEventos.style.display === 'block' ? 'none' : 'block';
-    });
+import React, { useState, useEffect, useRef } from 'react';
 
-    // Mostrar calendario al hacer clic
-    const mostrarCalendario = document.getElementById('mostrar-calendario');
-    const calendarContainer = document.getElementById('calendar-container');
-    mostrarCalendario.addEventListener('click', function() {
-      calendarContainer.classList.toggle('visible');
-    });
+const generarCarton = () => {
+  const numeros = Array.from({ length: 90 }, (_, i) => i + 1).sort(() => 0.5 - Math.random());
+  return Array.from({ length: 3 }, () => {
+    const fila = Array(9).fill(null);
+    const posiciones = Array.from({ length: 9 }, (_, i) => i).sort(() => 0.5 - Math.random()).slice(0, 5);
+    posiciones.forEach((pos) => fila[pos] = numeros.pop());
+    return fila;
+  });
+};
 
-    // Inicializar calendario
-    const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      locale: 'es',
-      selectable: true,
-      dateClick: function(info) {
-        const fecha = new Date(info.dateStr);
-        const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-        const fechaFormateada = fecha.toLocaleDateString('es-ES', opciones);
-        document.querySelector('.resumen ul li:nth-child(2)').textContent = 'Fecha seleccionada: ' + fechaFormateada;
+const App = () => {
+  const [cartones, setCartones] = useState(Array.from({ length: 10 }, () => generarCarton()));
+  const [nombres, setNombres] = useState(Array(10).fill(''));
+  const [bolas, setBolas] = useState([]);
+  const [mensaje, setMensaje] = useState('');
+  const [lineas, setLineas] = useState([]);
+  const [bingoGanador, setBingoGanador] = useState(null);
+  const [juegoTerminado, setJuegoTerminado] = useState(false);
+  const [auto, setAuto] = useState(false);
+  const [intervalo, setIntervalo] = useState(3);
+  const intervaloRef = useRef(null);
 
-        // Simulación de horario por defecto
-        document.querySelector('.resumen ul li:nth-child(3)').textContent = 'Horario: 14:00 - 18:00';
+  useEffect(() => {
+    if (auto && !juegoTerminado) {
+      intervaloRef.current = setInterval(() => tirarBola(), intervalo * 1000);
+    } else {
+      clearInterval(intervaloRef.current);
+    }
+    return () => clearInterval(intervaloRef.current);
+  }, [auto, bolas, juegoTerminado, intervalo]);
+
+  const tirarBola = () => {
+    if (!Array.isArray(cartones) || cartones.length === 0) return;
+    if (juegoTerminado) return;
+    if (nombres.filter(n => n.trim()).length < 2) return alert('Agrega al menos 2 nombres.');
+    if (bolas.length >= 90) return;
+
+    let nueva;
+    do {
+      nueva = Math.floor(Math.random() * 90) + 1;
+    } while (bolas.includes(nueva));
+
+    const nuevasBolas = [...bolas, nueva];
+    setBolas(nuevasBolas);
+
+    cartones.forEach((carton, index) => {
+      const nombre = nombres[index] || `Jugador ${index + 1}`;
+      const lineasDelCarton = carton.map(fila => fila.filter(n => n !== null).every(num => nuevasBolas.includes(num)));
+      if (lineasDelCarton.includes(true) && !lineas.find(l => l.nombre === nombre)) {
+        setLineas(prev => [...prev, { nombre, carton: index + 1 }]);
+        setMensaje(`${nombre} hizo LÍNEA!`);
+      }
+
+      const todosNumeros = carton.flat().filter(n => n !== null);
+      if (!bingoGanador && todosNumeros.every(num => nuevasBolas.includes(num))) {
+        setBingoGanador({ nombre, carton: index + 1 });
+        setMensaje(`${nombre} hizo BINGO!`);
+        setJuegoTerminado(true);
+        setAuto(false);
       }
     });
-    calendar.render();
+  };
 
-    // Selección de evento
-    document.querySelectorAll('.evento').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        const textoEvento = btn.textContent;
-        document.querySelector('.resumen ul li:nth-child(1)').textContent = 'Tipo de evento: ' + textoEvento;
-      });
-    });
-  });
+  const cambiarCartones = () => {
+    setCartones(Array.from({ length: 10 }, () => generarCarton()));
+    setLineas([]);
+    setBingoGanador(null);
+    setMensaje('');
+  };
 
-  // Cerrar popup si lo usaras luego
-  function cerrarPopup() {
-    document.getElementById('popup').style.display = 'none';
-    document.getElementById('popup-overlay').style.display = 'none';
-  }
-</script>
+  const reiniciarJuego = () => {
+    setCartones(Array.from({ length: 10 }, () => generarCarton()));
+    setBolas([]);
+    setLineas([]);
+    setBingoGanador(null);
+    setMensaje('');
+    setJuegoTerminado(false);
+    setNombres(Array(10).fill(''));
+    setAuto(false);
+  };
+
+  const coloresCarton = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe'];
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>Bingo</h1>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <button onClick={cambiarCartones} style={{ fontSize: '16px', padding: '10px 20px', cursor: 'pointer' }}>
+          🔁 Cambiar Cartones
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={() => setAuto(!auto)} style={{ fontSize: '16px', padding: '8px 12px', backgroundColor: auto ? '#ffc107' : '#007bff', color: '#fff', cursor: 'pointer' }}>
+            {auto ? '⏸️' : '▶️'}
+          </button>
+          <select value={intervalo} onChange={e => setIntervalo(Number(e.target.value))}>
+            {Array.from({ length: 10 }, (_, i) => (
+              <option key={i + 1} value={i + 1}>{i + 1}s</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '40px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', width: '75%' }}>
+          {cartones.map((carton, index) => (
+            <div
+              key={index}
+              style={{
+                border: '2px solid black',
+                padding: '10px',
+                borderRadius: '5px',
+                backgroundColor: coloresCarton[index % coloresCarton.length],
+                width: '280px'
+              }}
+            >
+              <h4 style={{ textAlign: 'center', marginBottom: '10px' }}>
+                {nombres[index] || `Jugador ${index + 1}`}
+              </h4>
+              {carton.map((fila, fIndex) => (
+                <div key={fIndex} style={{ display: 'flex' }}>
+                  {fila.map((num, nIndex) => (
+                    <div
+                      key={nIndex}
+                      style={{
+                        width: '30px',
+                        height: '30px',
+                        fontSize: '16px',
+                        backgroundColor: bolas.includes(num) ? '#28a745' : '#ffffff',
+                        color: bolas.includes(num) ? '#fff' : '#000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #000',
+                      }}
+                    >
+                      {num || ''}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          <button onClick={reiniciarJuego} style={{ fontSize: '16px', padding: '8px 16px', marginTop: '30px', cursor: 'pointer', width: '100%' }}>
+            🔄 Reiniciar Juego
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '25%' }}>
+          <button onClick={tirarBola} style={{ fontSize: '18px', padding: '10px 20px', cursor: 'pointer' }}>
+            🎯 Tirar Bola
+          </button>
+
+          {bolas.length > 0 && (
+            <div
+              style={{
+                fontSize: '2em',
+                background: '#ffffff',
+                borderRadius: '50%',
+                width: '80px',
+                height: '80px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#dc3545',
+                border: '3px solid #000',
+              }}
+            >
+              {bolas[bolas.length - 1]}
+            </div>
+          )}
+
+          <div style={{ marginTop: '20px', width: '100%' }}>
+            <h4>Números sorteados:</h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              {bolas.map((n, i) => (
+                <span key={i} style={{ background: '#eee', padding: '5px', borderRadius: '5px' }}>{n}</span>
+              ))}
+            </div>
+
+            <h4 style={{ marginTop: '20px' }}>Líneas:</h4>
+            {lineas.map((l, i) => (
+              <div key={i} style={{ color: '#007bff' }}>{l.nombre} (Cartón {l.carton}) hizo LÍNEA</div>
+            ))}
+
+            <h4 style={{ marginTop: '20px' }}>Bingo:</h4>
+            {bingoGanador && (
+              <div style={{ color: '#28a745', fontWeight: 'bold' }}>{bingoGanador.nombre} (Cartón {bingoGanador.carton}) hizo BINGO</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {mensaje && <h2 style={{ color: '#dc3545', marginTop: '20px' }}>{mensaje}</h2>}
+
+      <div style={{ marginTop: '20px' }}>
+        {nombres.map((nombre, i) => (
+          <input
+            key={i}
+            placeholder={`Nombre ${i + 1}`}
+            value={nombre}
+            onChange={e => {
+              const nuevos = [...nombres];
+              nuevos[i] = e.target.value;
+              setNombres(nuevos);
+            }}
+            style={{ margin: '5px', padding: '5px' }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default App;
